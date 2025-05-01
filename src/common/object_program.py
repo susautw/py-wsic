@@ -145,7 +145,7 @@ class ModificationRecord(ctypes.LittleEndianStructure):
     _fields_ = [
         ("record_type", ctypes.c_char),
         ("address", UInt24),
-        ("length", ctypes.c_uint8),
+        ("length", ctypes.c_uint8),  # length of the modification in bytes
         # data (maximum 60 bytes, SICFormatObjectCode)
     ]
 

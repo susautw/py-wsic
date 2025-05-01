@@ -21,3 +21,6 @@ class Registers(enum.IntEnum):
 
     S = enum.auto()
     """general purpose register"""
+
+    def __repr__(self):
+        return f"REG_{self.name}"

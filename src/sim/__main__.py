@@ -1,15 +1,33 @@
 import argparse
 from contextlib import ExitStack
 from pathlib import Path
+import sys
 from tempfile import NamedTemporaryFile
 
 import numpy as np
 
 from common.object_program import SICFormatObjectCode, UInt24
 
-from common.optable import EffectOption, code_lut
+from common.optable import EffectOption, OpcodeTable, code_lut
 from common.reg import Registers
 from sim.loader import load_program
+
+
+def bootstrap_program():
+    """
+    BOOT  START 0000     #0x0000
+    FIRST JSUB  XXXX     #0x0000
+          HLT            #0x0003
+          END   FIRST    #0x0006
+    """
+    bootstrap = [
+        SICFormatObjectCode.create(OpcodeTable.JSUB, 0),
+        SICFormatObjectCode.create(OpcodeTable.HLT, 0),
+    ]
+
+    # convert to bytes
+    bootstrap_bytes = list(b"".join(bytes(record) for record in bootstrap))
+    return bootstrap_bytes
 
 
 def main():
@@ -20,28 +38,35 @@ def main():
         v_memory = np.memmap(
             tmp_file,
             mode="w+",
-            shape=(0xFFFFFF,),
+            shape=(0xFFFF,),
             dtype=np.uint8,
         )
 
+        # Create the bootstrap program
+        bootstrap = bootstrap_program()
+        # Write the bootstrap program to the memory
+        v_memory[: len(bootstrap)] = bootstrap
+
         # Load the program into memory
-        exec_address, terminal_address = load_program(
+        exec_address = load_program(
             v_memory,
             args.program,
-            start_location=0x000000,
+            start_location=len(bootstrap),
         )
 
-        print(
-            f"Exec address: {exec_address:06X}, Terminal address: {terminal_address:06X}"
-        )
+        # write execution address to memory
+        v_memory[0x0001:0x0003] = list(bytes(exec_address.to_bytes(2, "little")))
+
+        print(f"Exec address: 0x{exec_address:06X}")
 
         registers = {r: UInt24.from_int(0) for r in Registers}
-        registers[Registers.PC] = UInt24.from_int(exec_address)
+        registers[Registers.PC] = UInt24.from_int(0)  # point to bootstrap program
 
         try:
             while True:
                 # Fetch the instruction
-                pc = registers[Registers.PC].to_int()
+                raw_pc = registers[Registers.PC]
+                pc = raw_pc.to_int()
                 instruction = v_memory[pc : pc + 3]
 
                 # Decode the instruction
@@ -57,22 +82,30 @@ def main():
                     print(f"Unknown opcode: {opcode}")
                     break
 
+                # Increment the program counter
+                registers[Registers.PC] = UInt24.from_int(
+                    registers[Registers.PC].to_int() + 3
+                )
+
+                # Print the instruction
+                print(
+                    f"IADDR: {raw_pc!r:25}"
+                    f"OP: {code_lut[opcode].name:8}"
+                    f"INDEXED: {indexed:1}  ",
+                    f"TADDR: 0x{decoded_address:06X}  "
+                    f"MEMORY: 0x{int.from_bytes(v_memory[decoded_address : decoded_address + 3], 'little'):06X}  ",
+                    f"REGISTERS: {registers}",
+                    file=sys.stderr,
+                )
+
                 # Execute the instruction
-                result = op.value.effect(
+                op.value.effect(
                     EffectOption(
                         memory=v_memory,
                         registers=registers,
                         decoded_address=decoded_address,
                     )
                 )
-
-                if result is None or not result.jumped:
-                    # Increment the program counter
-                    new_pc = pc + 3
-                    if new_pc >= terminal_address:
-                        print("End of program")
-                        break
-                    registers[Registers.PC] = UInt24.from_int(new_pc)
 
         except KeyboardInterrupt as e:
             print(e)

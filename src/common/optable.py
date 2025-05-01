@@ -22,11 +22,7 @@ from .reg import Registers
 from .formats import Formats
 
 
-type Effect = Callable[[EffectOption], ExecResult | None]
-
-
-class ExecResult(NamedTuple):
-    jumped: bool = False
+type Effect = Callable[[EffectOption], None]
 
 
 class EffectOption(NamedTuple):
@@ -138,23 +134,20 @@ def make_jump_effect(cond: Callable[[EffectOption], bool]) -> Effect:
             return None
         # Perform the jump operation
         option.registers[Registers.PC] = UInt24.from_int(option.decoded_address)
-        return ExecResult(jumped=True)
 
     return jump_effect
 
 
-def jsub_effect(option: EffectOption) -> ExecResult | None:
+def jsub_effect(option: EffectOption) -> None:
     # Save the current PC in the L register
     option.registers[Registers.L] = option.registers[Registers.PC]
     # Jump to the address
     option.registers[Registers.PC] = UInt24.from_int(option.decoded_address)
-    return ExecResult(jumped=True)
 
 
-def rsub_effect(option: EffectOption) -> ExecResult | None:
+def rsub_effect(option: EffectOption) -> None:
     # Jump to the address in the L register
     option.registers[Registers.PC] = option.registers[Registers.L]
-    return ExecResult(jumped=True)
 
 
 def rd_effect(option: EffectOption) -> None:
