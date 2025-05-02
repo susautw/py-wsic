@@ -93,12 +93,13 @@ class HeaderRecord(ctypes.LittleEndianStructure):
 
 class TextRecord(ctypes.LittleEndianStructure):
     ID = b"\x01"
+    MAX_TEXT_RECORD_SIZE = 30
     _pack_ = 1
     _fields_ = [
         ("record_type", ctypes.c_char),
         ("starting_address", UInt24),
         ("length", ctypes.c_uint8),
-        # data (maximum 60 bytes, SICFormatObjectCode)
+        # data (maximum 30 bytes, SICFormatObjectCode)
     ]
 
     record_type: bytes

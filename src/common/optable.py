@@ -39,6 +39,7 @@ class OpcodeItem(NamedTuple):
     opcode: int
     format: list[Formats]
     effect: Effect
+    has_operand: bool = True
 
 
 code_start = 0x00
@@ -211,12 +212,12 @@ class OpcodeTable(enum.Enum):
         make_jump_effect(lambda option: option.registers[Registers.SW].to_int() == 2),
     )
     JSUB = OpcodeItem("JSUB", new_code(), [Formats.SIC], jsub_effect)
-    RSUB = OpcodeItem("RSUB", new_code(), [Formats.SIC], rsub_effect)
+    RSUB = OpcodeItem("RSUB", new_code(), [Formats.SIC], rsub_effect, False)
 
-    RD = OpcodeItem("RD", new_code(), [Formats.SIC], rd_effect)
-    WD = OpcodeItem("WD", new_code(), [Formats.SIC], wd_effect)
-    HLT = OpcodeItem("HLT", new_code(), [Formats.SIC], halt_effect)
-    NOP = OpcodeItem("NOP", new_code(), [Formats.SIC], lambda _: None)
+    RD = OpcodeItem("RD", new_code(), [Formats.SIC], rd_effect, False)
+    WD = OpcodeItem("WD", new_code(), [Formats.SIC], wd_effect, False)
+    HLT = OpcodeItem("HLT", new_code(), [Formats.SIC], halt_effect, False)
+    NOP = OpcodeItem("NOP", new_code(), [Formats.SIC], lambda _: None, False)
 
 
 code_lut = {item.value.opcode: item for item in OpcodeTable}

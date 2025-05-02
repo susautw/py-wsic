@@ -12,7 +12,6 @@ from common.object_program import (
     ModificationRecord,
     Records,
     TextRecord,
-    UInt24,
 )
 
 

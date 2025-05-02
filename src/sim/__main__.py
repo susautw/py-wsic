@@ -57,7 +57,7 @@ def main():
         # write execution address to memory
         v_memory[0x0001:0x0003] = list(bytes(exec_address.to_bytes(2, "little")))
 
-        print(f"Exec address: 0x{exec_address:06X}")
+        print(f"Exec address: 0x{exec_address:04X}")
 
         registers = {r: UInt24.from_int(0) for r in Registers}
         registers[Registers.PC] = UInt24.from_int(0)  # point to bootstrap program
@@ -89,10 +89,10 @@ def main():
 
                 # Print the instruction
                 print(
-                    f"IADDR: {raw_pc!r:25}"
-                    f"OP: {code_lut[opcode].name:8}"
+                    f"0x{raw_pc.to_int():04X} | "
+                    f"{code_lut[opcode].name:6}"
                     f"INDEXED: {indexed:1}  ",
-                    f"TADDR: 0x{decoded_address:06X}  "
+                    f"TADDR: 0x{decoded_address:04X}  "
                     f"MEMORY: 0x{int.from_bytes(v_memory[decoded_address : decoded_address + 3], 'little'):06X}  ",
                     f"REGISTERS: {registers}",
                     file=sys.stderr,
