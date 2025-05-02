@@ -36,7 +36,7 @@ def tokenize(lines: Iterable[str]) -> Iterable[tuple[int, list[str]]]:
     """
     for line_number, line in enumerate(lines, start=1):
         # Skip empty lines and comments
-        if not line or line.rstrip().startswith("#"):
+        if not line.strip() or line.rstrip().startswith("#"):
             continue
 
         # Remove line comments

@@ -97,13 +97,13 @@ def make_store_effect(target_register: Registers, lowest_only: bool = False) -> 
     return store_effect
 
 
-def compare_effect(option: EffectOption):
+def compare_effect(option: EffectOption, reg=Registers.A):
     # Compare the value in the register with the value in memory
-    a = option.registers[Registers.A]
+    r = option.registers[reg]
     v = get_word(option.memory, option.decoded_address)
-    if a.to_int() == v.to_int():
+    if r.to_int() == v.to_int():
         option.registers[Registers.SW] = UInt24.from_int(0)
-    elif a.to_int() < v.to_int():
+    elif r.to_int() < v.to_int():
         option.registers[Registers.SW] = UInt24.from_int(1)
     else:
         option.registers[Registers.SW] = UInt24.from_int(2)
@@ -114,7 +114,7 @@ def tix_effect(option: EffectOption):
     option.registers[Registers.X] = UInt24.from_int(
         option.registers[Registers.X].to_int() + 1
     )
-    compare_effect(option)
+    compare_effect(option, Registers.X)
 
 
 def make_arithmetic_effect(fn: Callable[[int, int], int]) -> Effect:
