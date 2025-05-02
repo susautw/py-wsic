@@ -2,7 +2,6 @@
 A script to load a program into memory (a numpy memmap)
 """
 
-import ctypes
 from pathlib import Path
 import numpy as np
 
@@ -10,9 +9,9 @@ from common.object_program import (
     EndRecord,
     HeaderRecord,
     ModificationRecord,
-    Records,
     TextRecord,
 )
+from common.program_iter import program_iter
 
 
 def load_program(memory: np.memmap, program: Path, start_location: int) -> int:
@@ -33,12 +32,9 @@ def load_program(memory: np.memmap, program: Path, start_location: int) -> int:
         header_record = None
         end_record = None
 
-        while data:
-            # Parse the record
-            record, data = parse_record(data)
+        for record, buffer in program_iter(memoryview(data)):
             match record:
                 case HeaderRecord():
-                    # Load the header record
                     program_name = record.program_name.decode().strip()
                     starting_address = record.starting_address.to_int()
                     program_length = record.program_length.to_int()
@@ -56,7 +52,6 @@ def load_program(memory: np.memmap, program: Path, start_location: int) -> int:
                 case TextRecord():
                     if header_record is None:
                         raise ValueError("Header record not found before text record")
-                    # Load the text record
                     starting_address = record.starting_address.to_int()
                     length = record.length
 
@@ -65,14 +60,10 @@ def load_program(memory: np.memmap, program: Path, start_location: int) -> int:
                         start_location + starting_address : start_location
                         + starting_address
                         + length
-                    ] = list(data[:length])
-
-                    # consume the data
-                    data = data[length:]
+                    ] = list(buffer[:length])
                 case EndRecord():
                     if header_record is None:
                         raise ValueError("Header record not found before text record")
-                    # Load the end record
                     exec_address = record.exec_address.to_int() + start_location
                     end_record = record
                 case ModificationRecord():
@@ -97,14 +88,3 @@ def load_program(memory: np.memmap, program: Path, start_location: int) -> int:
             raise ValueError("End record not found")
 
     return exec_address
-
-
-def parse_record(buffer: bytes) -> tuple[Records, bytes]:
-    first_byte = buffer[0:1]
-    for record in [HeaderRecord, TextRecord, EndRecord, ModificationRecord]:
-        if record.ID == first_byte:
-            record_size = ctypes.sizeof(record)
-            record_data = buffer[0:record_size]
-            record_obj = record.from_buffer_copy(record_data)
-            return record_obj, buffer[record_size:]
-    raise ValueError(f"Unknown record type: {first_byte}")

@@ -2,9 +2,8 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from asm.directives import AsmDirectives
-from common.object_program import SICFormatObjectCode, UInt24
+from common.object_program import Records, SICFormatObjectCode, UInt24
 from common.optable import OpcodeTable
-from sim.loader import Records
 
 
 @dataclass
