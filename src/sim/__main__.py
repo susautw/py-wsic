@@ -38,7 +38,7 @@ def main():
         v_memory = np.memmap(
             tmp_file,
             mode="w+",
-            shape=(0xFFFF,),
+            shape=(0x7FFF,),
             dtype=np.uint8,
         )
 

@@ -61,6 +61,7 @@ def parse_and_create_symtab(
     """
     symtab = {}
     instructions = []
+    starting_addr = 0
     locctr = 0
 
     for line_number, token in tokens:
@@ -70,8 +71,12 @@ def parse_and_create_symtab(
         # Determine the size of the instruction
         size = parse_and_determine_size(instruction)
 
-        # Update the location counter
-        locctr += size
+        if instruction.op == AsmDirectives.START:
+            # If the instruction is a START directive, set the location counter to the starting address
+            starting_addr = locctr = instruction.parsed_ctx["starting_addr"]
+        else:
+            # Update the location counter
+            locctr += size
 
         # add the instruction to the list of instructions
         instructions.append(instruction)
@@ -80,7 +85,7 @@ def parse_and_create_symtab(
         if instruction.label:
             symtab[instruction.label] = instruction.location
 
-    return symtab, instructions, locctr
+    return symtab, instructions, locctr - starting_addr
 
 
 def parse_instruction(token: list[str], locctr: int, line_number: int) -> Instruction:
