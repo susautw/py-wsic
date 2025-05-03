@@ -1,13 +1,19 @@
 # WISC Assmebler & Simulator
 
 # Setup
-1. Install [uv](https://github.com/astral-sh/uv?tab=readme-ov-file#installation)
+1. Clone the repository
+```bash
+git clone https://github.com/susautw/py-wsic.git
+cd py-wsic
+```
 
-2. sync with uv
+2. Install [uv](https://github.com/astral-sh/uv?tab=readme-ov-file#installation)
+
+3. sync with uv
 ```bash
 uv sync
 ```
-3. Run the tests
+4. Run the tests
 ```bash
 uv run python -m asm test_programs/helloworld.asm  # run the assembler
 
