@@ -160,7 +160,8 @@ def rd_effect(option: EffectOption) -> None:
 
 def wd_effect(option: EffectOption) -> None:
     v = bytes(option.registers[Registers.A])
-    print(v.decode(), end="")
+    sys.stdout.write(v.decode())
+    sys.stdout.flush()
 
 
 def halt_effect(option: EffectOption) -> None:

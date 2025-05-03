@@ -3,6 +3,7 @@ from contextlib import ExitStack
 from pathlib import Path
 import sys
 from tempfile import NamedTemporaryFile
+import time
 
 import numpy as np
 
@@ -32,6 +33,7 @@ def bootstrap_program():
 
 def main():
     args = get_arg_parser().parse_args()
+    speed: float | None = args.speed
 
     with ExitStack() as stack:
         tmp_file = stack.enter_context(NamedTemporaryFile())
@@ -107,6 +109,10 @@ def main():
                     )
                 )
 
+                if speed is not None:
+                    # Sleep for the given speed
+                    time.sleep(speed)
+
         except KeyboardInterrupt as e:
             print(e)
 
@@ -119,6 +125,13 @@ def get_arg_parser() -> argparse.ArgumentParser:
         "program",
         type=Path,
         help="Path to the program file.",
+    )
+
+    parser.add_argument(
+        "-s",
+        "--speed",
+        type=float,
+        required=False,
     )
     return parser
 
