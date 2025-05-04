@@ -67,6 +67,8 @@ def main():
         registers = {r: UInt24.from_int(0) for r in Registers}
         registers[Registers.PC] = UInt24.from_int(0)  # point to bootstrap program
 
+        start_time = time.monotonic()
+
         try:
             while True:
                 # Fetch the instruction
@@ -118,6 +120,10 @@ def main():
 
         except KeyboardInterrupt as e:
             print(e)
+
+        finally:
+            end_time = time.monotonic()
+            print(f"Execution time: {end_time - start_time:.2f} seconds")
 
 
 def get_arg_parser() -> argparse.ArgumentParser:

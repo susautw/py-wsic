@@ -24,4 +24,7 @@ uv run python -m asmt output.obj  # show the object file produced
 uv run python -m sim output.obj 2>exec.log # run the simulator, redirecting stderr to exec.log
 
 # you can examine the log file to see the process of the simulator
+
+# run the simulator with a speed of 25 instructions per second
+uv run python -m sim output.obj --speed 25 2>exec.log 
 ```
