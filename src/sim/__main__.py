@@ -33,7 +33,10 @@ def bootstrap_program():
 
 def main():
     args = get_arg_parser().parse_args()
-    speed: float | None = args.speed
+    if args.speed is not None and args.speed > 0:
+        speed = 1 / args.speed
+    else:
+        speed = None
 
     with ExitStack() as stack:
         tmp_file = stack.enter_context(NamedTemporaryFile())
@@ -130,7 +133,7 @@ def get_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "-s",
         "--speed",
-        type=float,
+        type=int,
         required=False,
     )
     return parser
